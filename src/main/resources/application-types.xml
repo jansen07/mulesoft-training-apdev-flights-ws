@@ -28,5 +28,8 @@ type flight_json = {|
     <types:type name="flights_xml" format="xml">
       <types:example format="xml" element="{http://soap.training.mulesoft.com/}listAllFlightsResponse" location="examples/flights-example.xml"/>
     </types:type>
+    <types:type name="Flight_pojo" format="java">
+      <types:shape format="java" element="com.mulesoft.training.Flight"/>
+    </types:type>
   </types:catalog>
 </types:mule>
