@@ -25,5 +25,8 @@ type flight_json = {|
 
 ]]></types:shape>
     </types:type>
+    <types:type name="flights_xml" format="xml">
+      <types:example format="xml" element="{http://soap.training.mulesoft.com/}listAllFlightsResponse" location="examples/flights-example.xml"/>
+    </types:type>
   </types:catalog>
 </types:mule>
