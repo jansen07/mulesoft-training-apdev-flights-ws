@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
-	xmlns:american-flights-api="http://www.mulesoft.org/schema/mule/american-flights-api" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc" xmlns:american-flights-api="http://www.mulesoft.org/schema/mule/american-flights-api" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/american-flights-api http://www.mulesoft.org/schema/mule/american-flights-api/current/mule-american-flights-api.xsd
 http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
-http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
 	<flow name="getAmericanFlights" doc:id="e4138c56-d266-408c-a387-3966a0e3de15" >
 		<american-flights-api:get-flights doc:name="Get flights" doc:id="aa28f268-0fa2-4645-ba12-e5c465ca8482" client-id="${american.client_id}" client-secret="${american.client_secret}" config-ref="American_Flights_API_Config" destination="#[vars.code]"/>
 		<ee:transform doc:name="JSON to [Flight]" doc:id="0be7ff93-1804-41e5-8b8d-ea114807f78a" >
@@ -98,7 +99,7 @@ payload.body.ns0#findFlightResponse.*return map ( return , indexOfReturn ) -> {
 		<logger level="INFO" doc:name="Logger" doc:id="62bb28f7-a4a8-4d89-a041-0774d62cefa7" />
 	</flow>
 	<sub-flow name="setCode" doc:id="8a355d9e-c597-47fc-aa66-bf18094afb96" >
-		<set-variable value='#[message.attributes.queryParams.code default "SFO"]' doc:name="code" doc:id="681ce1f5-3eac-4f94-9785-136223926f17" variableName="code"/>
+		<set-variable value='#[message.attributes.queryParams.code]' doc:name="code" doc:id="681ce1f5-3eac-4f94-9785-136223926f17" variableName="code"/>
 	</sub-flow>
 	<flow name="getAllAirlineFlights" doc:id="79b8d781-5cfb-4f07-9707-5e12c224dd7f" >
 		<scatter-gather doc:name="Scatter-Gather" doc:id="c8e9b192-0a89-4832-8f53-a15bc9459343" >
@@ -126,6 +127,7 @@ flatten(payload..payload)]]></ee:set-payload>
 		<http:listener doc:name="GET /flights" doc:id="1efd18fc-031f-4bb6-9fa0-6495e95e1572" config-ref="HTTP_Listener_config" path="/flights" allowedMethods="GET"/>
 		<set-variable value="#[message.attributes.queryParams.airline]" doc:name="airline" doc:id="c38dc349-0608-483a-9143-13c87065edd9" variableName="airline" />
 		<flow-ref doc:name="setCode" doc:id="86eb909f-d969-48f9-94e4-d46343b20f99" name="setCode"/>
+		<validation:is-true doc:name="Is true" doc:id="a9df3871-58bc-45ed-9b6d-41ab1d5a24be" expression="#[['SFO','LAX','CLE','PDX','PDF'] contains vars.code]" message="#['Invalid destination' ++ ' ' ++ (vars.code default ' ')]"/>
 		<choice doc:name="Choice" doc:id="3afbc998-dee0-43c5-a5ee-c12d853a6740" >
 			<when expression="#[vars.airline == 'American']">
 				<flow-ref doc:name="getAmericanFlights" doc:id="4385ec10-55b7-41ed-a6be-13296adcd7bd" name="getAmericanFlights"/>
